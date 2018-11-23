@@ -1,11 +1,12 @@
 
-##安装
+##install
 
-ionic cordova plugin add   插件路径
+ionic cordova plugin add   [your path]
 
-##使用
+##use
 
-declare var GPSLocationPlugin:any;//声明
+declare var GPSLocationPlugin:any;
+
 
      GPSLocationPlugin.getLocationAllTime(data => {
           console.log("GPSLocationPlugin:"+data);
@@ -16,3 +17,7 @@ declare var GPSLocationPlugin:any;//声明
         console.log(JSON.stringify(msg));
     
       });
+	  
+##base source:
+
+https://github.com/yanxiaojun617/com.kit.cordova.amaplocation.git
