@@ -1,0 +1,21 @@
+{
+  "name": "gpsloaction",
+  "version": "1.0.0",
+  "description": "",
+  "author": "xuchang",
+  "license": "ISC",
+  "cordova": {
+    "id": "com.xu.gps",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+   "keywords": [
+    "cordova",
+    "location",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ]
+}
