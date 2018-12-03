@@ -54,7 +54,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
     public boolean execute(String action, JSONArray args,
                            CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
-        Log.e(TAG, action);
+        Log.i(TAG, action);
         if (ACTION_GETLOCATION.equals(action.toLowerCase(Locale.CHINA))) {
             stopLocation();
             isOnceLocation = true;
