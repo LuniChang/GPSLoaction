@@ -45,39 +45,39 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
     private long timeOutSet = 10000L;
 
-    private boolean hadGetGps=false;
-    private long curentGetGpsTime=0;
+    private boolean hadGetGps = false;
+    private long curentGetGpsTime = 0;
 
-    private boolean isWatchTimeOut=false;
+    private boolean isWatchTimeOut = false;
 
     private ExecutorService executorService;
 
 
-    protected class  WatchTimeOutRunnable implements Runnable{
+    protected class WatchTimeOutRunnable implements Runnable {
         @Override
         public void run() {
-           while (isWatchTimeOut){
+            while (isWatchTimeOut) {
 
 
-               try {
-                   Thread.sleep(timeOutSet);
-               } catch (InterruptedException e) {
-                   Log.e(TAG, "isWatchTimeOut error");
-               }
+                try {
+                    Thread.sleep(timeOutSet);
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "isWatchTimeOut error");
+                }
 
-               if(!hadGetGps&&curentGetGpsTime+timeOutSet<System.currentTimeMillis()){
+                if (!hadGetGps && curentGetGpsTime + timeOutSet < System.currentTimeMillis()) {
 
-                   cordova.getActivity().runOnUiThread(new Runnable() {
-                       public void run() {
+                    cordova.getActivity().runOnUiThread(new Runnable() {
+                        public void run() {
 
-                           whenTimeOut();
-                       }
-                   });
+                            whenTimeOut();
+                        }
+                    });
 
 
-               }
+                }
 
-           }
+            }
         }
     }
 
@@ -98,7 +98,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
                            CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
 
-        this.hadGetGps=false;
+        this.hadGetGps = false;
 
 
         Log.i(TAG, action);
@@ -139,19 +139,26 @@ public class GPSLoactionPlugin extends CordovaPlugin {
         return true;
     }
 
-    public void startWatchTimeOut(){
-        if(this.isWatchTimeOut==true){
+    public void startWatchTimeOut() {
+        if (this.isWatchTimeOut == true) {
             return;
         }
-        this.isWatchTimeOut=true;
+        this.isWatchTimeOut = true;
 
-        this.curentGetGpsTime=System.currentTimeMillis();
+        this.curentGetGpsTime = System.currentTimeMillis();
 
-        if(executorService!=null)
-            executorService.shutdown();
+        try {
+            if (executorService != null) {
+                if (!executorService.isShutdown())
+                    executorService.shutdown();
+                executorService = null;
+            }
 
-        executorService=cordova.getThreadPool();
-        executorService.execute(new WatchTimeOutRunnable());
+            executorService = cordova.getThreadPool();
+            executorService.execute(new WatchTimeOutRunnable());
+        } catch (Exception e) {
+            Log.e(TAG, "startWatchTimeOut" + e.getMessage());
+        }
 
 
     }
@@ -164,21 +171,21 @@ public class GPSLoactionPlugin extends CordovaPlugin {
         if (locationListener != null)
             locationManager.removeUpdates(locationListener);
 
-        if(executorService!=null)
-           executorService.shutdown();
-         isWatchTimeOut=false;
+        if (executorService != null)
+            executorService.shutdown();
+        isWatchTimeOut = false;
 
     }
 
 
-    protected void whenTimeOut(){
-        Log.i(TAG,"gps timeout");
+    protected void whenTimeOut() {
+        Log.i(TAG, "gps timeout");
         JSONObject jo = new JSONObject();
         try {
 
             jo.put("is_timeout", 1);
 
-            Log.e(TAG, "json:" + jo.toString());
+            Log.i(TAG, "json:" + jo.toString());
         } catch (JSONException e) {
             jo = null;
             e.printStackTrace();
@@ -202,8 +209,8 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
     protected void callbackLocation(android.location.Location location) {
         if (location != null) {
-            hadGetGps=true;
-            this.curentGetGpsTime=System.currentTimeMillis();
+            hadGetGps = true;
+            this.curentGetGpsTime = System.currentTimeMillis();
             // 获取位置信息
             Double latitude = location.getLatitude();
             Double longitude = location.getLongitude();
@@ -291,8 +298,6 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
 
         try {
-
-
 
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 1,
