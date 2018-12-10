@@ -48,7 +48,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
     private boolean hadGetGps = false;
     private long curentGetGpsTime = 0;
 
-    private boolean isWatchTimeOut = false;
+    private volatile boolean isWatchTimeOut = false;
 
     private ExecutorService executorService;
 
@@ -73,7 +73,9 @@ public class GPSLoactionPlugin extends CordovaPlugin {
                             whenTimeOut();
                         }
                     });
-
+                    if (isOnceLocation) {
+                        isWatchTimeOut = false;
+                    }
 
                 }
 
@@ -148,12 +150,6 @@ public class GPSLoactionPlugin extends CordovaPlugin {
         this.curentGetGpsTime = System.currentTimeMillis();
 
         try {
-            if (executorService != null) {
-                if (!executorService.isShutdown())
-                    executorService.shutdown();
-                executorService = null;
-            }
-
             executorService = cordova.getThreadPool();
             executorService.execute(new WatchTimeOutRunnable());
         } catch (Exception e) {
@@ -171,9 +167,8 @@ public class GPSLoactionPlugin extends CordovaPlugin {
         if (locationListener != null)
             locationManager.removeUpdates(locationListener);
 
-        if (executorService != null)
-            executorService.shutdown();
         isWatchTimeOut = false;
+
 
     }
 
