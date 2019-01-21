@@ -41,6 +41,7 @@ GPSLoactionPlugin.prototype.watchGpsSign = function(successCallback,errorCallbac
       
     cordova.exec(successCallback,errorCallback,"GPSLoactionPlugin","watchGpsSign",[signEnale,gpsSignInterval]);
 };
+
 GPSLoactionPlugin.prototype.stopWatchGpsSign = function(successCallback,errorCallback) {
 
       
