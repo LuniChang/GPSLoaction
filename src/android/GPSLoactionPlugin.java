@@ -62,7 +62,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
     private long interval = 1000L;
 
     private long timeOutSet = 10000L;
-
+    private long gpsSignInterval=1000L;
     private boolean hadGetGps = false;
     private long curentGetGpsTime = 0;
 
@@ -173,6 +173,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
         }else if (ACTION_WATCH_GPS_SIGN.equals(action.toLowerCase(Locale.CHINA))) {
             try {
                 gpsEnableSign = Integer.valueOf(args.getInt(0));
+                gpsSignInterval= Long.valueOf(args.getInt(1));
             } catch (Exception e) {
                 Log.e(TAG, "gpsEnableSign error");
             }
@@ -484,7 +485,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
         try {
 
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 1,
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1,
                     locationListener);
         } catch (Exception e) {
 
@@ -505,7 +506,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
             locationManager.addGpsStatusListener(watchGpsStatusistener);
 
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 1,
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, gpsSignInterval, 1,
                     watchFooLocationListener);
 
 
