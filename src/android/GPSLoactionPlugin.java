@@ -53,6 +53,10 @@ public class GPSLoactionPlugin extends CordovaPlugin {
     private GpsStatusistener gpsStatusistener=new GpsStatusistener();
     private CallbackContext callbackContext = null;
 
+
+    private FooLocationListener onceFooLocationListener = new FooLocationListener();
+    private FooLocationListener watchFooLocationListener = new FooLocationListener();
+
     private Context context;
     private boolean isOnceLocation = true;
     private long interval = 1000L;
@@ -69,6 +73,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
     private int gpsSign = -1;
 
     private int gpsEnableSign=29;
+
 
 
     protected class WatchTimeOutRunnable implements Runnable {
@@ -322,6 +327,30 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
     }
 
+    public class FooLocationListener implements LocationListener {
+        @Override
+        public void onLocationChanged(android.location.Location location) {
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            callbackContext.error(provider);
+        }
+
+    }
+
+
     public class WatchGpsStatusistener implements GpsStatus.Listener {
         @Override
         public void onGpsStatusChanged(int event) {
@@ -428,6 +457,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
 
                 locationManager.removeGpsStatusListener(this);
+                locationManager.removeUpdates(onceFooLocationListener);
                 callbackContext.success(jo);
             } catch (Exception e) {
 
@@ -475,7 +505,8 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
             locationManager.addGpsStatusListener(watchGpsStatusistener);
 
-
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 1,
+                    watchFooLocationListener);
 
 
         } catch (Exception e) {
@@ -488,6 +519,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
     public void stopWathcGpsSign(){
         try {
             locationManager.removeGpsStatusListener(gpsStatusistener);
+            locationManager.removeUpdates(watchFooLocationListener);
         } catch (Exception e) {
             Log.e(TAG, "startWatchTimeOut" + e.getMessage());
         }
@@ -501,6 +533,8 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
             locationManager.addGpsStatusListener(gpsStatusistener);
 
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 1,
+                    onceFooLocationListener);
 
 
 
