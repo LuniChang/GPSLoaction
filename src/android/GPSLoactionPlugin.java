@@ -270,6 +270,9 @@ public class GPSLoactionPlugin extends CordovaPlugin {
             // 时间
             long time = location.getTime();
 
+            // 海拔
+            double altitude = location.getAltitude();
+
             JSONObject jo = new JSONObject();
             try {
                 jo.put("type", "location");
@@ -282,6 +285,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
                 jo.put("bearing", bearing);
                 jo.put("satellites", satellites);
                 jo.put("time", time);
+                jo.put("altitude", altitude);
                 Log.e(TAG, "json:" + jo.toString());
             } catch (JSONException e) {
                 jo = null;
