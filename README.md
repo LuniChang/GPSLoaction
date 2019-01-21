@@ -43,6 +43,21 @@ declare var GPSLocationPlugin:any;
     
       },timeout);
 	  
+	  
+	  ##get gps enable satellites,  android only
+	     let signRange=29;//set satellites which sign >29 ,default is 29
+	     GPSLocationPlugin.getGpsSign(data => {
+            console.log("GPSLocationPlugin:"+data);
+      
+            let satellites = data.enable_satellites;
+        
+        
+        }, msg => {
+          console.log(JSON.stringify(msg));
+      
+        },signRange);
+	  
+	  
 ##base source:
 
 https://github.com/yanxiaojun617/com.kit.cordova.amaplocation.git

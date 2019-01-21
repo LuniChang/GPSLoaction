@@ -31,15 +31,24 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
     private static final String ACTION_GETLOCATION_STOP = "stop";
 
-    private static final String ACTION_GPS_SIGN_STOP = "gpssignstop";
 
-    private static final String ACTION_GPS_SIGN = "getgpssign";
+    private static final String ACTION_GET_GPS_SIGN = "getgpssign";
+
+    private static final String ACTION_WATCH_GPS_SIGN = "watchgetgpssign";
+
+    private static final String ACTION_WATCH_GPS_SIGN_STOP = "watchgpssignstop";
 
     private static final String TAG = "GPSLoactionPlugin";
+
+
+
 
     private LocationManager locationManager = null;
     private Criteria locationOption = null;
     private GpsLocationListener locationListener = new GpsLocationListener();
+
+
+    private WatchGpsStatusistener watchGpsStatusistener = new WatchGpsStatusistener();
 
     private GpsStatusistener gpsStatusistener=new GpsStatusistener();
     private CallbackContext callbackContext = null;
@@ -58,6 +67,9 @@ public class GPSLoactionPlugin extends CordovaPlugin {
     private ExecutorService executorService;
 
     private int gpsSign = -1;
+
+    private int gpsEnableSign=29;
+
 
     protected class WatchTimeOutRunnable implements Runnable {
         @Override
@@ -143,12 +155,27 @@ public class GPSLoactionPlugin extends CordovaPlugin {
             isOnceLocation = true;
             stopLocation();
             return true;
-        } else if (ACTION_GPS_SIGN.equals(action.toLowerCase(Locale.CHINA))) {
+        } else if (ACTION_GET_GPS_SIGN.equals(action.toLowerCase(Locale.CHINA))) {
+
+            try {
+                gpsEnableSign = Integer.valueOf(args.getInt(0));
+            } catch (Exception e) {
+                Log.e(TAG, "gpsEnableSign error");
+            }
             getGpsSign();
 
             return true;
-        } else if (ACTION_GPS_SIGN_STOP.equals(action.toLowerCase(Locale.CHINA))) {
-            stopGpsSign();
+        }else if (ACTION_WATCH_GPS_SIGN.equals(action.toLowerCase(Locale.CHINA))) {
+            try {
+                gpsEnableSign = Integer.valueOf(args.getInt(0));
+            } catch (Exception e) {
+                Log.e(TAG, "gpsEnableSign error");
+            }
+            watchGpsSign();
+
+            return true;
+        } else if (ACTION_WATCH_GPS_SIGN_STOP.equals(action.toLowerCase(Locale.CHINA))) {
+            stopWathcGpsSign();
 
             return true;
         }
@@ -295,7 +322,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
     }
 
-    public class GpsStatusistener implements GpsStatus.Listener {
+    public class WatchGpsStatusistener implements GpsStatus.Listener {
         @Override
         public void onGpsStatusChanged(int event) {
             try {
@@ -307,13 +334,15 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
                 Iterator<GpsSatellite> iters = gpsStatus.getSatellites().iterator(); //卫星颗数统计
                 int count = 0;
+                int maxCount = 0;
 
                 while (iters.hasNext() && count <= maxSatellites) {
                     GpsSatellite item = iters.next();
 
-                    if (item.getSnr() > 0) {
+                    if (item.getSnr() > gpsEnableSign) {
                         ++count;
                     }
+                    ++maxCount;
                 }
 
                 gpsSign = count;
@@ -329,6 +358,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
                     }
 
                     jo.put("max_satellites", maxSatellites);
+                    jo.put("found_satellites", maxCount);
                     jo.put("enable_satellites", gpsSign);
                     Log.e(TAG, "json:" + jo.toString());
                 } catch (JSONException e) {
@@ -341,6 +371,64 @@ public class GPSLoactionPlugin extends CordovaPlugin {
                 r.setKeepCallback(true);
 
                 callbackContext.sendPluginResult(r);
+            } catch (Exception e) {
+
+                callbackContext.error(e.getMessage());
+
+            }
+
+        }
+    }
+
+
+    public class GpsStatusistener implements GpsStatus.Listener {
+        @Override
+        public void onGpsStatusChanged(int event) {
+            try {
+
+                GpsStatus gpsStatus = locationManager.getGpsStatus(null);
+
+
+                int maxSatellites = gpsStatus.getMaxSatellites();
+
+                Iterator<GpsSatellite> iters = gpsStatus.getSatellites().iterator(); //卫星颗数统计
+                int count = 0;
+                int maxCount=0;
+                while (iters.hasNext() && count <= maxSatellites) {
+                    GpsSatellite item = iters.next();
+
+                    if (item.getSnr() > gpsEnableSign) {
+                        ++count;
+                    }
+                    ++maxCount;
+                }
+
+                gpsSign = count;
+
+
+                JSONObject jo = new JSONObject();
+                try {
+                    jo.put("type", "gps_sign");
+                    if (maxSatellites != 0) {
+                        jo.put("gps_sign", gpsSign / maxSatellites);
+                    } else {
+                        jo.put("gps_sign", 0);
+                    }
+
+                    jo.put("max_satellites", maxSatellites);
+                    jo.put("found_satellites", maxCount);
+                    jo.put("enable_satellites", gpsSign);
+                    Log.e(TAG, "json:" + jo.toString());
+                } catch (JSONException e) {
+                    jo = null;
+                    Log.e(TAG, e.getMessage());
+
+                }
+
+
+
+                locationManager.removeGpsStatusListener(this);
+                callbackContext.success(jo);
             } catch (Exception e) {
 
                 callbackContext.error(e.getMessage());
@@ -378,8 +466,34 @@ public class GPSLoactionPlugin extends CordovaPlugin {
     /**
      * gps sign enable
      *
-     * @return if enable  than >=4    大于等于4才有效
+     *  if enable  than >=4    大于等于4才有效
      */
+    public void watchGpsSign() {
+        try {
+            if (locationManager == null)
+                locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+            locationManager.addGpsStatusListener(watchGpsStatusistener);
+
+
+
+
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+            callbackContext.error(e.getMessage());
+        }
+
+    }
+
+    public void stopWathcGpsSign(){
+        try {
+            locationManager.removeGpsStatusListener(gpsStatusistener);
+        } catch (Exception e) {
+            Log.e(TAG, "startWatchTimeOut" + e.getMessage());
+        }
+
+    }
+
     public void getGpsSign() {
         try {
             if (locationManager == null)
@@ -394,16 +508,6 @@ public class GPSLoactionPlugin extends CordovaPlugin {
             Log.e(TAG, e.getMessage());
             callbackContext.error(e.getMessage());
         }
-
-    }
-
-    public void stopGpsSign(){
-        try {
-            locationManager.removeGpsStatusListener(gpsStatusistener);
-        } catch (Exception e) {
-            Log.e(TAG, "startWatchTimeOut" + e.getMessage());
-        }
-
     }
 
 }

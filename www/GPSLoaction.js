@@ -30,15 +30,21 @@ GPSLoactionPlugin.prototype.stop = function(successCallback,errorCallback) {
 };
 
 
-GPSLoactionPlugin.prototype.getGpsSign = function(successCallback,errorCallback) {
+GPSLoactionPlugin.prototype.getGpsSign = function(successCallback,errorCallback,signEnale=29) {
 
       
-    cordova.exec(successCallback,errorCallback,"GPSLoactionPlugin","getGpsSign",[]);
+    cordova.exec(successCallback,errorCallback,"GPSLoactionPlugin","getGpsSign",[signEnale]);
 };
-GPSLoactionPlugin.prototype.stopGpsSign = function(successCallback,errorCallback) {
+
+GPSLoactionPlugin.prototype.watchGpsSign = function(successCallback,errorCallback,signEnale=29) {
 
       
-    cordova.exec(successCallback,errorCallback,"GPSLoactionPlugin","stopGpsSign",[]);
+    cordova.exec(successCallback,errorCallback,"GPSLoactionPlugin","watchGpsSign",[signEnale]);
+};
+GPSLoactionPlugin.prototype.stopWatchGpsSign = function(successCallback,errorCallback) {
+
+      
+    cordova.exec(successCallback,errorCallback,"GPSLoactionPlugin","stopWatchGpsSign",[]);
 };
 
 
