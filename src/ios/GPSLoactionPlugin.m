@@ -36,7 +36,7 @@ static NSString* const LONGITUDE_KEY = @"longitude";
 
 - (void)getlocation:(CDVInvokedUrlCommand*)command{
     callbackId = command.callbackId;
-    self.isOnce=YES;
+    self->iOnce=YES;
     if(curLocationManager == nil){
         curLocationManager = [[CLLocationManager alloc] init];
         curLocationManager.distanceFilter = kCLDistanceFilterNone;
@@ -61,12 +61,12 @@ static NSString* const LONGITUDE_KEY = @"longitude";
 
 - (void)getLocationAllTime:(CDVInvokedUrlCommand*)command{
     callbackId = command.callbackId;
-    self.isOnce=NO;
+    self->isOnce=NO;
     if(curLocationManager == nil){
         curLocationManager = [[CLLocationManager alloc] init];
         curLocationManager.distanceFilter = kCLDistanceFilterNone;
         curLocationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;//精度最佳
-        curLocationManager.allowsBackgroundLocationUpdates = true
+        curLocationManager.allowsBackgroundLocationUpdates = true;
         curLocationManager.delegate = self;
         if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined && [[[UIDevice currentDevice] systemVersion ] floatValue] >= 8.0){
             [curLocationManager requestAlwaysAuthorization];
@@ -88,7 +88,7 @@ static NSString* const LONGITUDE_KEY = @"longitude";
 
 - (void)stop:(CDVInvokedUrlCommand*)command{
 
-    if(curLocationManager ！= nil){
+    if(curLocationManager != nil){
         [curLocationManager stopUpdatingLocation];
      
     }
