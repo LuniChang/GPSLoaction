@@ -5,7 +5,7 @@
 
 static NSString* const LATITUDE_KEY = @"latitude";
 static NSString* const LONGITUDE_KEY = @"longitude";
-
+static NSString* const ALTITUDE_KEY = @"altitude";
 /**
  *IOS版本的定位采用CLLocationManager类进行定位
  */
@@ -107,7 +107,16 @@ static NSString* const LONGITUDE_KEY = @"longitude";
 	 CLLocationCoordinate2D gcjLocation =location.coordinate;
     if(manager == curLocationManager){
         if(callbackId != nil){
-            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[NSDictionary dictionaryWithObjectsAndKeys: [NSNumber numberWithDouble: gcjLocation.longitude], LONGITUDE_KEY, [NSNumber numberWithDouble: gcjLocation.latitude], LATITUDE_KEY, nil]];
+            CDVPluginResult* pluginResult = [
+			CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:
+			[
+			NSDictionary dictionaryWithObjectsAndKeys: 
+			[NSNumber numberWithDouble: gcjLocation.longitude], LONGITUDE_KEY,
+			[NSNumber numberWithDouble: gcjLocation.latitude], LATITUDE_KEY,
+			[NSNumber numberWithDouble: gcjLocation.altitude], ALTITUDE_KEY,
+			nil
+			]
+			];
            if(!self.isOnce){
              [pluginResult setKeepCallbackAsBool:YES];
            }
