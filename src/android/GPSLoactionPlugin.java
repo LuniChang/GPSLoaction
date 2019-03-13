@@ -88,7 +88,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
                     Log.e(TAG, "isWatchTimeOut error");
                 }
 
-                if (!hadGetGps && curentGetGpsTime + timeOutSet < System.currentTimeMillis()) {
+                 if (!hadGetGps && curentGetGpsTime + timeOutSet < System.currentTimeMillis() && timeOutSet > 0) {
 
                     cordova.getActivity().runOnUiThread(new Runnable() {
                         public void run() {
