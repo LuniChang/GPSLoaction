@@ -44,6 +44,11 @@ static NSString* const ALTITUDE_KEY = @"altitude";
         curLocationManager.delegate = self;
         if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined && [[[UIDevice currentDevice] systemVersion ] floatValue] >= 8.0){
             [curLocationManager requestAlwaysAuthorization];
+		
+        }
+		  if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined && [[[UIDevice currentDevice] systemVersion ] floatValue] >= 11.0){
+          
+			[curLocationManager requestWhenInUseAuthorization];
         }
     }
     
@@ -70,7 +75,13 @@ static NSString* const ALTITUDE_KEY = @"altitude";
         curLocationManager.delegate = self;
         if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined && [[[UIDevice currentDevice] systemVersion ] floatValue] >= 8.0){
             [curLocationManager requestAlwaysAuthorization];
+		   
         }
+		if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined && [[[UIDevice currentDevice] systemVersion ] floatValue] >= 11.0){
+           [curLocationManager requestWhenInUseAuthorization];
+		   
+        }
+		
     }
     
     if(![CLLocationManager locationServicesEnabled]){
@@ -146,7 +157,8 @@ static NSString* const ALTITUDE_KEY = @"altitude";
     locationManager.distanceFilter = kCLLocationAccuracyHundredMeters; //更新距离
     locationManager.desiredAccuracy = kCLLocationAccuracyBest;//精度最佳
     if([[[UIDevice currentDevice] systemVersion ] floatValue] >= 8.0){
-        [locationManager requestAlwaysAuthorization];
+      //  [locationManager requestAlwaysAuthorization];
+	  [locationManager requestWhenInUseAuthorization];
     }
 }
 
