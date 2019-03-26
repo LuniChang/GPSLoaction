@@ -157,9 +157,14 @@ static NSString* const ALTITUDE_KEY = @"altitude";
     locationManager.distanceFilter = kCLLocationAccuracyHundredMeters; //更新距离
     locationManager.desiredAccuracy = kCLLocationAccuracyBest;//精度最佳
     if([[[UIDevice currentDevice] systemVersion ] floatValue] >= 8.0){
-      //  [locationManager requestAlwaysAuthorization];
-	  [locationManager requestWhenInUseAuthorization];
+        [locationManager requestAlwaysAuthorization];
+	  
     }
+	if([[[UIDevice currentDevice] systemVersion ] floatValue] >= 11.0){
+        [locationManager requestWhenInUseAuthorization];
+	  
+    }
+	
 }
 
 
