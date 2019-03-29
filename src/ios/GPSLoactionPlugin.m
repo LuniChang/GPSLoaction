@@ -36,7 +36,7 @@ static NSString* const ALTITUDE_KEY = @"altitude";
 
 - (void)getlocation:(CDVInvokedUrlCommand*)command{
     callbackId = command.callbackId;
-    self->iOnce=YES;
+    self->isOnce=YES;
     if(curLocationManager == nil){
         curLocationManager = [[CLLocationManager alloc] init];
         curLocationManager.distanceFilter = kCLDistanceFilterNone;
@@ -124,20 +124,20 @@ static NSString* const ALTITUDE_KEY = @"altitude";
 			NSDictionary dictionaryWithObjectsAndKeys: 
 			[NSNumber numberWithDouble: gcjLocation.longitude], LONGITUDE_KEY,
 			[NSNumber numberWithDouble: gcjLocation.latitude], LATITUDE_KEY,
-			[NSNumber numberWithDouble: gcjLocation.altitude], ALTITUDE_KEY,
+			[NSNumber numberWithDouble: location.altitude], ALTITUDE_KEY,
 			nil
 			]
 			];
-           if(!self.isOnce){
+           if(!self->isOnce){
              [pluginResult setKeepCallbackAsBool:YES];
            }
 
             [self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
 
-            if(self.isOnce)
+            if(self->isOnce)
                callbackId = nil;
         }
-        if(self.isOnce)
+        if(self->isOnce)
            [manager stopUpdatingLocation];
     }
 }
