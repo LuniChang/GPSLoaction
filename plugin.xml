@@ -39,6 +39,7 @@
       <uses-permission android:name="android.permission.CALL_PHONE"/> 
     </config-file>  
     <source-file src="src/android/GPSLoactionPlugin.java" target-dir="src/com/xu/gps/"/> 
+	 <source-file src="src/android/LocationForegoundService.java" target-dir="src/com/xu/gps/"/> 
   </platform>  
   <platform name="ios"> 
     <config-file parent="/*" target="config.xml"> 
