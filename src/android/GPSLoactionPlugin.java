@@ -153,7 +153,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
         } catch (Exception e) {
             Log.e(TAG, "startWatchTimeOut" + e.getMessage());
         }
-        if(isSartLocation) {
+        if(!isSartLocation) {
             if (null != serviceIntent) {
                 context.startService(serviceIntent);
                 isSartLocation=true;
