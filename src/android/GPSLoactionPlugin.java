@@ -7,6 +7,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -138,7 +139,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
         return true;
     }
     private Intent serviceIntent = null;
-    private boolean isSartLocation=false;
+
     public void startWatchTimeOut() {
         if (this.isWatchTimeOut == true) {
             return;
@@ -153,12 +154,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
         } catch (Exception e) {
             Log.e(TAG, "startWatchTimeOut" + e.getMessage());
         }
-        if(!isSartLocation) {
-            if (null != serviceIntent) {
-                context.startService(serviceIntent);
-                isSartLocation=true;
-            }
-        }
+
 
 
     }
@@ -174,7 +170,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
         isWatchTimeOut = false;
         if(null != serviceIntent){
             context.stopService(serviceIntent);
-            isSartLocation=false;
+         
         }
 
     }
@@ -308,6 +304,15 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
             callbackContext.error(e.getMessage());
         }
+
+
+            if (null == serviceIntent) {
+                serviceIntent=new Intent();
+                serviceIntent.setClass(context,LocationForegoundService.class);
+            }
+            context.startService(serviceIntent);
+
+
 
     }
 
