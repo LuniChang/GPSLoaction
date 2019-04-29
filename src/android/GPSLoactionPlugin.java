@@ -18,10 +18,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 
-
+import android.location.GpsSatellite;
+import android.location.GpsStatus;
 public class GPSLoactionPlugin extends CordovaPlugin {
 
     private static final String ACTION_GETLOCATION = "getlocation";
@@ -32,9 +34,22 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
     private static final String TAG = "GPSLoactionPlugin";
 
+    private static final String ACTION_GPS_SIGN_STOP = "gpssignstop";
+
+    private static final String ACTION_GET_GPS_SIGN = "getgpssign";
+    private static final String ACTION_WATCH_GPS_SIGN = "watchgetgpssign";
+
+    private static final String ACTION_WATCH_GPS_SIGN_STOP = "watchgpssignstop";
     private LocationManager locationManager = null;
     private Criteria locationOption = null;
     private GpsLocationListener locationListener = new GpsLocationListener();
+    private WatchGpsStatusistener watchGpsStatusistener = new WatchGpsStatusistener();
+
+    private GpsStatusistener gpsStatusistener=new GpsStatusistener();
+
+
+        private FooLocationListener onceFooLocationListener = new FooLocationListener();
+    private FooLocationListener watchFooLocationListener = new FooLocationListener();
     private CallbackContext callbackContext = null;
 
     private Context context;
@@ -50,12 +65,14 @@ public class GPSLoactionPlugin extends CordovaPlugin {
 
     private ExecutorService executorService;
 
+    private long gpsSignInterval = 1000L;
+    private int gpsEnableSign = 29;
+    private int gpsSign = -1;
 
     protected class WatchTimeOutRunnable implements Runnable {
         @Override
         public void run() {
             while (isWatchTimeOut) {
-
 
                 try {
                     Thread.sleep(timeOutSet);
@@ -135,9 +152,84 @@ public class GPSLoactionPlugin extends CordovaPlugin {
             isOnceLocation = true;
             stopLocation();
             return true;
+        } else if (ACTION_GET_GPS_SIGN.equals(action.toLowerCase(Locale.CHINA))) {
+
+            try {
+                gpsEnableSign = Integer.valueOf(args.getInt(0));
+
+            } catch (Exception e) {
+                Log.e(TAG, "gpsEnableSign error");
+            }
+            getGpsSign();
+
+            return true;
+        }else if (ACTION_WATCH_GPS_SIGN.equals(action.toLowerCase(Locale.CHINA))) {
+            try {
+                gpsEnableSign = Integer.valueOf(args.getInt(0));
+                gpsSignInterval= Long.valueOf(args.getInt(1));
+            } catch (Exception e) {
+                Log.e(TAG, "gpsEnableSign error");
+            }
+            watchGpsSign();
+
+            return true;
+        } else if (ACTION_GPS_SIGN_STOP.equals(action.toLowerCase(Locale.CHINA)))(ACTION_WATCH_GPS_SIGN_STOP.equals(action.toLowerCase(Locale.CHINA)))
+        {
+            stopWathcGpsSign();
+            return true;
         }
         return true;
     }
+
+    /**
+     * gps sign enable
+     *
+     * @return if enable  than >=4    大于4有效卫星
+     */
+    public void watchGpsSign() {
+        try {
+            if (locationManager == null)
+                locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+            locationManager.addGpsStatusListener(watchGpsStatusistener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 1,
+                    watchFooLocationListener);
+
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+            callbackContext.error(e.getMessage());
+        }
+
+    }
+
+    public void stopWathcGpsSign(){
+        try {
+            locationManager.removeGpsStatusListener(gpsStatusistener);
+            locationManager.removeUpdates(watchFooLocationListener);
+        } catch (Exception e) {
+            Log.e(TAG, "startWatchTimeOut" + e.getMessage());
+        }
+
+    }
+
+    public void getGpsSign() {
+        try {
+            if (locationManager == null)
+                locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+            locationManager.addGpsStatusListener(gpsStatusistener);
+
+
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 1,
+                    onceFooLocationListener);
+
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+
     private Intent serviceIntent = null;
 
     public void startWatchTimeOut() {
@@ -155,8 +247,6 @@ public class GPSLoactionPlugin extends CordovaPlugin {
             Log.e(TAG, "startWatchTimeOut" + e.getMessage());
         }
 
-
-
     }
 
     private void stopLocation() {
@@ -168,19 +258,18 @@ public class GPSLoactionPlugin extends CordovaPlugin {
             locationManager.removeUpdates(locationListener);
 
         isWatchTimeOut = false;
-        if(null != serviceIntent){
+        if (null != serviceIntent) {
             context.stopService(serviceIntent);
-         
+
         }
 
     }
-
 
     protected void whenTimeOut() {
         Log.i(TAG, "gps timeout");
         JSONObject jo = new JSONObject();
         try {
-
+            jo.put("type", "timeout");
             jo.put("is_timeout", 1);
 
             Log.i(TAG, "json:" + jo.toString());
@@ -188,7 +277,6 @@ public class GPSLoactionPlugin extends CordovaPlugin {
             jo = null;
             e.printStackTrace();
         }
-
 
         if (!isOnceLocation) {
 
@@ -203,7 +291,6 @@ public class GPSLoactionPlugin extends CordovaPlugin {
             stopLocation();
         }
     }
-
 
     protected void callbackLocation(android.location.Location location) {
         if (location != null) {
@@ -224,8 +311,11 @@ public class GPSLoactionPlugin extends CordovaPlugin {
             // 时间
             long time = location.getTime();
 
+            double altitude = location.getAltitude();
+
             JSONObject jo = new JSONObject();
             try {
+                jo.put("type", "location");
                 jo.put("latitude", latitude);
                 jo.put("longitude", longitude);
                 jo.put("hasAccuracy", hasAccuracy);
@@ -235,12 +325,12 @@ public class GPSLoactionPlugin extends CordovaPlugin {
                 jo.put("bearing", bearing);
                 jo.put("satellites", satellites);
                 jo.put("time", time);
+                jo.put("altitude", altitude);
                 Log.e(TAG, "json:" + jo.toString());
             } catch (JSONException e) {
                 jo = null;
-                e.printStackTrace();
+                Log.e(TAG, e.getMessage());
             }
-
 
             if (!isOnceLocation) {
 
@@ -288,33 +378,164 @@ public class GPSLoactionPlugin extends CordovaPlugin {
         if (locationOption == null) {
             locationOption = new Criteria();
             locationOption.setAccuracy(Criteria.ACCURACY_FINE); // 高精度
-            locationOption.setAltitudeRequired(false);
-            locationOption.setBearingRequired(false);
+            locationOption.setAltitudeRequired(true);
+            locationOption.setBearingRequired(true);
+            locationOption.setSpeedRequired(true);
             locationOption.setCostAllowed(true);
             locationOption.setPowerRequirement(Criteria.POWER_LOW); // 功耗
         }
 
-
         try {
 
-
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 1,
-                    locationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 1, locationListener);
         } catch (Exception e) {
 
             callbackContext.error(e.getMessage());
         }
 
-
-            if (null == serviceIntent) {
-                serviceIntent=new Intent();
-                serviceIntent.setClass(context,LocationForegoundService.class);
-            }
-            context.startService(serviceIntent);
-
-
+        if (null == serviceIntent) {
+            serviceIntent = new Intent();
+            serviceIntent.setClass(context, LocationForegoundService.class);
+        }
+        context.startService(serviceIntent);
 
     }
 
+    public class WatchGpsStatusistener implements GpsStatus.Listener {
+
+        @Override
+        public void onGpsStatusChanged(int event) {
+            try {
+
+                GpsStatus gpsStatus = locationManager.getGpsStatus(null);
+
+                int maxSatellites = gpsStatus.getMaxSatellites();
+
+                Iterator<GpsSatellite> iters = gpsStatus.getSatellites().iterator();
+                int count = 0;
+                int maxCount = 0;
+                while (iters.hasNext() && count <= maxSatellites) {
+                    GpsSatellite item = iters.next();
+
+                    if (item.getSnr() > gpsEnableSign) {
+                        ++count;
+                    }
+                    ++maxCount;
+                }
+
+                gpsSign = count;
+
+                JSONObject jo = new JSONObject();
+                try {
+                    jo.put("type", "gps_sign");
+                    if (maxSatellites != 0) {
+                        jo.put("gps_sign", gpsSign / maxSatellites);
+                    } else {
+                        jo.put("gps_sign", 0);
+                    }
+
+                    jo.put("max_satellites", maxSatellites);
+                    jo.put("found_satellites", maxCount);
+                    jo.put("enable_satellites", gpsSign);
+                    Log.e(TAG, "json:" + jo.toString());
+                } catch (JSONException e) {
+                    jo = null;
+                    Log.e(TAG, e.getMessage());
+
+                }
+                PluginResult r = new PluginResult(PluginResult.Status.OK, jo);
+
+                r.setKeepCallback(true);
+
+                callbackContext.sendPluginResult(r);
+            } catch (Exception e) {
+
+                callbackContext.error(e.getMessage());
+
+            }
+
+        }
+    }
+    public class GpsStatusistener implements GpsStatus.Listener {
+        @Override
+        public void onGpsStatusChanged(int event) {
+            try {
+
+                GpsStatus gpsStatus = locationManager.getGpsStatus(null);
+
+
+                int maxSatellites = gpsStatus.getMaxSatellites();
+
+                Iterator<GpsSatellite> iters = gpsStatus.getSatellites().iterator(); //鍗«鏄熼¢楁暟缁熻®
+                int count = 0;
+                int maxCount=0;
+                while (iters.hasNext() && count <= maxSatellites) {
+                    GpsSatellite item = iters.next();
+
+                    if (item.getSnr() > gpsEnableSign) {
+                        ++count;
+                    }
+                    ++maxCount;
+                }
+
+                gpsSign = count;
+
+
+                JSONObject jo = new JSONObject();
+                try {
+                    jo.put("type", "gps_sign");
+                    if (maxSatellites != 0) {
+                        jo.put("gps_sign", gpsSign / maxSatellites);
+                    } else {
+                        jo.put("gps_sign", 0);
+                    }
+
+                    jo.put("max_satellites", maxSatellites);
+                    jo.put("found_satellites", maxCount);
+                    jo.put("enable_satellites", gpsSign);
+                    Log.e(TAG, "json:" + jo.toString());
+                } catch (JSONException e) {
+                    jo = null;
+                    Log.e(TAG, e.getMessage());
+
+                }
+
+
+
+                locationManager.removeGpsStatusListener(this);
+                locationManager.removeUpdates(onceFooLocationListener);
+                callbackContext.success(jo);
+            } catch (Exception e) {
+
+                callbackContext.error(e.getMessage());
+
+            }
+
+        }
+    }
+
+
+    public class FooLocationListener implements LocationListener {
+        @Override
+        public void onLocationChanged(android.location.Location location) {
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            callbackContext.error(provider);
+        }
+
+    }
 
 }
