@@ -1,6 +1,6 @@
 {
   "name": "gpsloaction",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "author": "xuchang",
   "license": "ISC",
@@ -17,5 +17,9 @@
     "ecosystem:cordova",
     "cordova-android",
     "cordova-ios"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LuniChang/GPSLoaction.git"
+  },
 }
