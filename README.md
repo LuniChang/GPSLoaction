@@ -58,6 +58,6 @@ declare var GPSLocationPlugin:any;
         },signRange);
 	  
 	  
-##base source:
+#reference
 
 https://github.com/yanxiaojun617/com.kit.cordova.amaplocation.git
