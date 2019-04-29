@@ -1,7 +1,7 @@
 
 ##install
 
-ionic cordova plugin add   [your path]
+ionic cordova plugin add  https://github.com/LuniChang/GPSLoaction.git
 
 ##use
 
