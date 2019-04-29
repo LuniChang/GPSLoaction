@@ -173,7 +173,7 @@ public class GPSLoactionPlugin extends CordovaPlugin {
             watchGpsSign();
 
             return true;
-        } else if (ACTION_GPS_SIGN_STOP.equals(action.toLowerCase(Locale.CHINA)))(ACTION_WATCH_GPS_SIGN_STOP.equals(action.toLowerCase(Locale.CHINA)))
+        } else if (ACTION_WATCH_GPS_SIGN_STOP.equals(action.toLowerCase(Locale.CHINA)))
         {
             stopWathcGpsSign();
             return true;
