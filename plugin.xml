@@ -39,7 +39,7 @@
       <!--拨打电话的权限，该权限并非该插件所需，只是为了方便App调用电话-->
       <uses-permission android:name="android.permission.CALL_PHONE"/>
     </config-file>
-    <config-file target="AndroidManifest.xml" parent="/application">
+    <config-file target="AndroidManifest.xml" parent="application">
       <service android:name="com.xu.gps.LocationForegoundService" android:foregroundServiceType="location">
 
       </service>
